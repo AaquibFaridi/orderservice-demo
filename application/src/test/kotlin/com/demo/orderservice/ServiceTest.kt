@@ -61,5 +61,19 @@ class ServiceTest {
 		 val expected:String = "Invalid product Selected, Order Discarded!";		 
 		 Assert.assertEquals(expected, result);
 	 }
+	
+	@Test
+	 fun testProcessOrderSuccessForPromotionApplied() {
+		 var productList: ArrayList<Products> =ArrayList<Products>()
+		 productList.add(Products(1,"Apple",10,10.00))
+		 productList.add(Products(2,"Orange",10,10.00))
+		 productList.add(Products(3,"Banana",10,10.00))
+		 Mockito.`when`(productDao. fetchEnquiredProducts(Mockito.anyList())).thenReturn(productList);
+		 var order:Map<String,Int> = mapOf<String,Int>("Apple" to 4,"Orange" to 6)
+		 val result :String= orderService.processOrder(order)
+		 val expected:String = "Order Submited. Your Order total is $ 60.0 & Order Id #";		 
+		 //Assert.asser assertEquals(expected, result);
+		 Assert.assertTrue(result.contains(expected));
+	 }
 
 }

@@ -13,6 +13,9 @@ class OrderServiceImpl : OrderService{
 
 	@Autowired
 	lateinit var productDao: ProductDao
+	
+	@Value("\${promotion.flag}")
+	lateinit var promotionFlag: String
 
 	private val log = LoggerFactory.getLogger(OrderServiceImpl::class.java)
 
@@ -48,7 +51,19 @@ class OrderServiceImpl : OrderService{
 
 	fun calculateAmount(quantity: Int, product: Products, totalAmount: Double) : Double{
 		var amt : Double
-		amt = totalAmount +  (quantity * product.price)
+		var chargableQty : Int
+		if(promotionFlag == "1") {
+			if(product.product == Constant.PROMOTION_APPLE) {
+				chargableQty = (quantity/2) + (quantity%2 )
+			} else if(product.product == Constant.PROMOTION_ORANGE) {
+				chargableQty = ((quantity/3)*2) + (quantity%3)
+			} else {
+				chargableQty=quantity
+			}
+		} else {
+			chargableQty=quantity
+		}
+		amt = totalAmount +  (chargableQty * product.price)
 		return amt
 	}
 
