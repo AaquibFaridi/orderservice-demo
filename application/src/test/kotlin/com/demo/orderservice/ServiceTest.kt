@@ -30,10 +30,17 @@ class ServiceTest {
 
 	@Autowired
 	lateinit var orderService:OrderService
-
+	
+	@Autowired
+	lateinit var backendServiceAsync:BackendServiceAsync
+	
 	@MockBean
 	lateinit var productDao:ProductDao
-
+	
+	@MockBean
+	lateinit var notificationService: NotificationService
+	
+	
 	
 	 @Test
 	 fun testProcessOrderSuccess() {
@@ -75,5 +82,34 @@ class ServiceTest {
 		 //Assert.asser assertEquals(expected, result);
 		 Assert.assertTrue(result.contains(expected));
 	 }
+	
+	@Async
+	@Test
+	 fun testBackendServiceForCheckStockAvailabilityAndProcessOrderSuccess() {
+		 var productList: ArrayList<Products> =ArrayList<Products>()
+		 productList.add(Products(1,"Apple",10,10.00))
+		 productList.add(Products(2,"Orange",10,10.00))
+		 Mockito.`when`(notificationService. sendMessage(Mockito.anyString(),Mockito.anyString())).thenReturn(null)
+		 Mockito.`when`(productDao. fetchEnquiredProducts(Mockito.anyList())).thenReturn(productList);
+		 var products:Map<String,Int> = mapOf<String,Int>("Apple" to 1,"Orange" to 2)
+		 val result :CompletableFuture<String> =  backendServiceAsync.checkStockAvailabilityAndProcessOrder(Order(UUID.randomUUID(),products,30.00,"Order Submitted"))
+		 val expected:String = "Your Order was successfully processed.";		 
+		 Assert.assertEquals(expected, result.get());
+	 }
+	
+	@Async
+	@Test
+	 fun testBackendServiceForCheckStockAvailabilityAndProcessOrderOutOfStock() {
+		 var productList: ArrayList<Products> =ArrayList<Products>()
+		 productList.add(Products(1,"Apple",10,10.00))
+		 productList.add(Products(2,"Orange",10,10.00))
+		 Mockito.`when`(notificationService. sendMessage(Mockito.anyString(),Mockito.anyString())).thenReturn(null)
+		 Mockito.`when`(productDao. fetchEnquiredProducts(Mockito.anyList())).thenReturn(productList);
+		 var products:Map<String,Int> = mapOf<String,Int>("Apple" to 100,"Orange" to 2)
+		 val result :CompletableFuture<String> =  backendServiceAsync.checkStockAvailabilityAndProcessOrder(Order(UUID.randomUUID(),products,30.00,"Order Submitted"))
+		 val expected:String = "Your Order Failed due to unavailable stock";		 
+		 Assert.assertEquals(expected, result.get());
+	 }
+	
 
 }

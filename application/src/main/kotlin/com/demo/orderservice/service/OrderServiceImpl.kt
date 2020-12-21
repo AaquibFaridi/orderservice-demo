@@ -13,6 +13,9 @@ class OrderServiceImpl : OrderService{
 
 	@Autowired
 	lateinit var productDao: ProductDao
+
+	@Autowired
+	lateinit var backendService: BackendServiceAsync
 	
 	@Value("\${promotion.flag}")
 	lateinit var promotionFlag: String
@@ -40,7 +43,8 @@ class OrderServiceImpl : OrderService{
 				return Constant.INAVLID_PRODUCT_SELECTED
 			} else {
 
-				var finalorder:Order = Order(UUID.randomUUID(),order,totalAmount,Constant.ORDER_PENDING)			
+				var finalorder:Order = Order(UUID.randomUUID(),order,totalAmount,Constant.ORDER_PENDING)
+				backendService.checkStockAvailabilityAndProcessOrder(finalorder)			
 				return Constant.ORDER_SUBMITED_AND_AMOUNT+totalAmount+Constant.ORDER_SUBMITED_ID+finalorder.orderId
 			}
 		} catch (e : Exception) {
@@ -50,6 +54,7 @@ class OrderServiceImpl : OrderService{
 	}
 
 	fun calculateAmount(quantity: Int, product: Products, totalAmount: Double) : Double{
+
 		var amt : Double
 		var chargableQty : Int
 		if(promotionFlag == "1") {
